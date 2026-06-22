@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="THALAPATHY" />
+<meta name="theme-color" content="#0b0e14" />
+<title>THALAPATHY — The Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="game-wrap">
+
+  <canvas id="game-canvas"></canvas>
+
+  <button id="btn-mute" class="mute-btn" aria-label="Toggle Sound">🔊</button>
+
+  <!-- ===================== TOP HUD (in-game) ===================== -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="health-block">
+        <div class="hud-label">HERO</div>
+        <div class="health-bar"><div id="player-health" class="health-fill"></div></div>
+        <div class="hud-label ammo-label">AMMO</div>
+        <div id="ammo-pips" class="ammo-pips"></div>
+      </div>
+      <div class="mission-block">
+        <div class="hud-label" id="level-label">LEVEL 1 / 5 — NARIPADDI STREET</div>
+        <div class="hud-label" id="kill-label">TARGETS DOWN: 0 / 5</div>
+        <div class="hud-label" id="wave-hud">WAVE: 1 &nbsp; MODE: CAMPAIGN</div>
+          <div class="hud-label score-label" id="score-label">SCORE: 0</div>
+          <div class="hud-label" id="current-status">CURRENT: OFF</div>
+      </div>
+    </div>
+    <div id="boss-health-wrap" class="hidden">
+      <div class="hud-label boss-label" id="boss-name">??? — THE FUSE THIEF</div>
+      <div class="health-bar boss-bar"><div id="boss-health" class="health-fill boss-fill"></div></div>
+    </div>
+    <div id="combo-toast" class="combo-toast hidden"></div>
+  </div>
+
+  <!-- ===================== STORY OVERLAY ===================== -->
+  <div id="story-overlay" class="overlay hidden">
+    <div class="story-box">
+      <div class="story-eyebrow" id="story-eyebrow">SALEM · NARIPADDI</div>
+      <div class="story-text" id="story-text"></div>
+      <button id="story-continue" class="btn-primary">CONTINUE ▸</button>
+    </div>
+  </div>
+
+  <!-- ===================== START SCREEN ===================== -->
+  <div id="start-screen" class="overlay">
+    <div class="menu-photo-wrap">
+      <img src="assets/menu-photo.png" alt="Thalapathy Main Menu" class="menu-photo" onerror="this.style.display='none'" />
+    </div>
+    <div class="title-wrap">
+      <div class="title-spark">⚡</div>
+      <h1 class="game-title">THALAPATHY</h1>
+      <div class="game-subtitle">THE GAME</div>
+    </div>
+    <p class="lore-text">
+      Naripaddi current kambam la fuse carrier moiyam ah thookitanga.
+      Whole area power cut. Oru aalu mattum than ipo current'ah thirumba kondu varuvaru.
+    </p>
+    <button id="start-btn" class="btn-primary btn-glow">START</button>
+    <div class="btn-row" style="margin-top:12px;">
+      <button id="exit-btn" class="btn-secondary">EXIT</button>
+    </div>
+    <div class="controls-hint">
+      <span>⌨ ←/→ Move · ↑ Jump · J Punch · K Kick · L Shoot (limited ammo!)</span>
+      <span>📱 Use the on-screen pad below</span>
+    </div>
+  </div>
+
+  <!-- ===================== LEVEL COMPLETE ===================== -->
+
+  <!-- ===================== OPTIONS OVERLAY (dynamically shown) ===================== -->
+  <div id="options-overlay" class="overlay hidden">
+    <h2 class="screen-title">OPTIONS</h2>
+    <div style="max-width:420px; text-align:left;">
+      <div style="margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:10px;"><input id="opt-music-toggle" type="checkbox" checked/> Music</label>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:10px;"><input id="opt-sfx-toggle" type="checkbox" checked/> SFX</label>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+        <button id="options-close" class="btn-primary">CLOSE</button>
+        <button id="options-reset" class="btn-secondary">RESET PROGRESS</button>
+      </div>
+    </div>
+  </div>
+  <div id="level-complete-screen" class="overlay hidden">
+    <h2 class="screen-title">AREA CLEARED</h2>
+    <p class="screen-text" id="level-complete-text"></p>
+    <p class="screen-stats" id="level-complete-stats"></p>
+    <button id="next-level-btn" class="btn-primary">CONTINUE ▸</button>
+  </div>
+
+  <!-- ===================== VICTORY ===================== -->
+  <div id="victory-screen" class="overlay hidden">
+    <div class="title-spark">⚡</div>
+    <h2 class="screen-title win-title">POWER RESTORED</h2>
+    <p class="screen-text">
+      Fuse carrier recovered. Current kambam back online. Naripaddi has its hero again.
+    </p>
+    <p class="screen-stats" id="victory-stats"></p>
+    <div class="btn-row">
+      <button id="restart-btn" class="btn-primary">PLAY AGAIN</button>
+      <button id="endless-btn" class="btn-secondary btn-glow">ENDLESS MODE ▸</button>
+        <button id="victory-menu-btn" class="btn-secondary">MAIN MENU</button>
+    </div>
+  </div>
+
+  <!-- ===================== MISSION COMPLETE (after boss) ===================== -->
+  <div id="mission-complete-screen" class="overlay hidden">
+    <h2 class="screen-title">MISSION COMPLETE</h2>
+    <p class="screen-text">You defeated the boss.</p>
+    <div class="btn-row">
+      <button id="mission-exit-btn" class="btn-secondary">EXIT</button>
+      <button id="mission-wave-btn" class="btn-primary">WAVE MODE ▸</button>
+    </div>
+  </div>
+
+  <!-- ===================== GAME OVER ===================== -->
+  <div id="gameover-screen" class="overlay hidden">
+    <h2 class="screen-title lose-title">KNOCKED OUT</h2>
+    <p class="screen-text" id="gameover-text">The street wins this round...</p>
+    <p class="screen-stats" id="gameover-stats"></p>
+    <div class="btn-row" id="gameover-story-buttons">
+      <button id="retry-btn" class="btn-primary">RETRY LEVEL</button>
+      <button id="menu-btn-story" class="btn-secondary">MAIN MENU</button>
+    </div>
+    <div class="btn-row hidden" id="gameover-endless-buttons">
+      <button id="retry-endless-btn" class="btn-primary">RETRY ENDLESS</button>
+      <button id="menu-btn-endless" class="btn-secondary">MAIN MENU</button>
+    </div>
+  </div>
+
+  <!-- ===================== TOUCH CONTROLS ===================== -->
+  <div id="touch-controls">
+    <div class="pad-side pad-left">
+      <button class="pad-btn move-btn" id="btn-left" aria-label="Move Left">◂</button>
+      <button class="pad-btn move-btn" id="btn-right" aria-label="Move Right">▸</button>
+    </div>
+    <div class="pad-side pad-right">
+      <button class="pad-btn action-btn shoot-btn" id="btn-shoot" aria-label="Shoot">🔫</button>
+      <button class="pad-btn action-btn kick-btn" id="btn-kick" aria-label="Kick">🦵</button>
+      <button class="pad-btn action-btn punch-btn" id="btn-punch" aria-label="Punch">👊</button>
+      <button class="pad-btn action-btn jump-btn" id="btn-jump" aria-label="Jump">▲</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
