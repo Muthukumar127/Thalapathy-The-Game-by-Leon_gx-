@@ -30,7 +30,7 @@
         <div id="ammo-pips" class="ammo-pips"></div>
       </div>
       <div class="mission-block">
-        <div class="hud-label" id="level-label">LEVEL 1 / 5 — NARIPADDI STREET</div>
+        <div class="hud-label" id="level-label">LEVEL 1 / 10 — NARIPADDI STREET</div>
         <div class="hud-label" id="kill-label">TARGETS DOWN: 0 / 5</div>
         <div class="hud-label" id="wave-hud">WAVE: 1 &nbsp; MODE: CAMPAIGN</div>
           <div class="hud-label score-label" id="score-label">SCORE: 0</div>
@@ -38,7 +38,7 @@
       </div>
     </div>
     <div id="boss-health-wrap" class="hidden">
-      <div class="hud-label boss-label" id="boss-name">??? — THE FUSE THIEF</div>
+      <div class="hud-label boss-label" id="boss-name">??? — THE BOSS</div>
       <div class="health-bar boss-bar"><div id="boss-health" class="health-fill boss-fill"></div></div>
     </div>
     <div id="combo-toast" class="combo-toast hidden"></div>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <!-- ===================== START SCREEN ===================== -->
+  <!-- ===================== START SCREEN (MAIN MENU) - Simplified ===================== -->
   <div id="start-screen" class="overlay">
     <div class="menu-photo-wrap">
       <img src="assets/menu-photo.png" alt="Thalapathy Main Menu" class="menu-photo" onerror="this.style.display='none'" />
@@ -67,19 +67,19 @@
       Naripaddi current kambam la fuse carrier moiyam ah thookitanga.
       Whole area power cut. Oru aalu mattum than ipo current'ah thirumba kondu varuvaru.
     </p>
-    <button id="start-btn" class="btn-primary btn-glow">START</button>
-    <div class="btn-row" style="margin-top:12px;">
-      <button id="exit-btn" class="btn-secondary">EXIT</button>
+
+    <div class="btn-row" style="width:100%; max-width:480px; margin-bottom:8px;">
+      <button id="menu-story-btn" class="btn-primary btn-glow" style="flex:1; margin:0;" onclick="showScreen(null); startLevel(0);">STORY MODE</button>
     </div>
-    <div class="controls-hint">
-      <span>⌨ ←/→ Move · ↑ Jump · J Punch · K Kick · L Shoot (limited ammo!)</span>
-      <span>📱 Use the on-screen pad below</span>
+
+    <div class="btn-row" style="width:100%; max-width:480px; margin-bottom:8px;">
+      <button id="menu-wave-btn" class="btn-secondary" style="flex:1; margin:0;" onclick="showScreen(null); startEndless();">WAVE MODE</button>
     </div>
+
+    <button id="menu-fullscreen-btn" class="btn-secondary" style="margin-top:8px; font-size:12px; padding:8px 16px;" onclick="toggleFullscreen();">FULLSCREEN</button>
   </div>
 
-  <!-- ===================== LEVEL COMPLETE ===================== -->
-
-  <!-- ===================== OPTIONS OVERLAY (dynamically shown) ===================== -->
+  <!-- ===================== OPTIONS OVERLAY ===================== -->
   <div id="options-overlay" class="overlay hidden">
     <h2 class="screen-title">OPTIONS</h2>
     <div style="max-width:420px; text-align:left;">
@@ -95,6 +95,8 @@
       </div>
     </div>
   </div>
+
+  <!-- ===================== LEVEL COMPLETE ===================== -->
   <div id="level-complete-screen" class="overlay hidden">
     <h2 class="screen-title">AREA CLEARED</h2>
     <p class="screen-text" id="level-complete-text"></p>
@@ -102,30 +104,37 @@
     <button id="next-level-btn" class="btn-primary">CONTINUE ▸</button>
   </div>
 
-  <!-- ===================== VICTORY ===================== -->
-  <div id="victory-screen" class="overlay hidden">
-    <div class="title-spark">⚡</div>
-    <h2 class="screen-title win-title">POWER RESTORED</h2>
-    <p class="screen-text">
-      Fuse carrier recovered. Current kambam back online. Naripaddi has its hero again.
-    </p>
-    <p class="screen-stats" id="victory-stats"></p>
-    <div class="btn-row">
-      <button id="restart-btn" class="btn-primary">PLAY AGAIN</button>
-      <button id="endless-btn" class="btn-secondary btn-glow">ENDLESS MODE ▸</button>
-        <button id="victory-menu-btn" class="btn-secondary">MAIN MENU</button>
-    </div>
-  </div>
-
   <!-- ===================== MISSION COMPLETE (after boss) ===================== -->
   <div id="mission-complete-screen" class="overlay hidden">
     <h2 class="screen-title">MISSION COMPLETE</h2>
-    <p class="screen-text">You defeated the boss.</p>
+    <p class="screen-text">The fuse carrier is recovered. The current kambam is online. Naripaddi has power again!</p>
     <div class="btn-row">
-      <button id="mission-exit-btn" class="btn-secondary">EXIT</button>
+      <button id="mission-exit-btn" class="btn-secondary">MAIN MENU</button>
       <button id="mission-wave-btn" class="btn-primary">WAVE MODE ▸</button>
     </div>
   </div>
+
+  <!-- ===================== VICTORY ===================== -->
+<div id="victory-screen" class="overlay hidden">
+  <div class="title-spark">⚡</div>
+  <h2 class="screen-title win-title">POWER RESTORED</h2>
+  <p class="screen-text">
+    The fuse carrier recovered. Current kambam back online. Naripaddi is safe again. You are the hero!
+  </p>
+  <p class="screen-stats" id="victory-stats"></p>
+  
+  <!-- Campaign mode buttons -->
+  <div class="btn-row" id="victory-buttons">
+    <button id="restart-btn" class="btn-primary">PLAY AGAIN</button>
+    <button id="victory-menu-btn" class="btn-secondary">MAIN MENU</button>
+  </div>
+  
+  <!-- Try other modes -->
+  <div class="btn-row" style="margin-top:8px;">
+    <button id="victory-defense-btn" class="btn-secondary">WAVE DEFENSE</button>
+    <button id="victory-survival-btn" class="btn-secondary">SURVIVAL</button>
+  </div>
+</div>
 
   <!-- ===================== GAME OVER ===================== -->
   <div id="gameover-screen" class="overlay hidden">
@@ -159,5 +168,25 @@
 </div>
 
 <script src="game.js"></script>
+<script>
+// Ensure menu buttons attach even if game.js loads slowly or had errors.
+(function attachMenuButtons(){
+  function tryAttach(){
+    const s = document.getElementById('menu-story-btn');
+    const w = document.getElementById('menu-wave-btn');
+    const f = document.getElementById('menu-fullscreen-btn');
+    // check that the functions exist
+    if(window && typeof window.startLevel === 'function' && typeof window.startEndless === 'function' && typeof window.toggleFullscreen === 'function' && typeof window.showScreen === 'function'){
+      if(s) s.addEventListener('click', ()=>{ try{ window.showScreen(null); window.startLevel(0); }catch(e){ console.error(e); } });
+      if(w) w.addEventListener('click', ()=>{ try{ window.showScreen(null); window.startEndless(); }catch(e){ console.error(e); } });
+      if(f) f.addEventListener('click', ()=>{ try{ window.toggleFullscreen(); }catch(e){ console.error(e); } });
+    } else {
+      // retry after short delay
+      setTimeout(tryAttach, 150);
+    }
+  }
+  tryAttach();
+})();
+</script>
 </body>
 </html>

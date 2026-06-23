@@ -1,5 +1,5 @@
 /* ===================================================================
-   GOAT — Power of the Streets
+   GOAT — Power of the Streets [EXPANDED]
    2D side-scrolling action game. Salem / Naripaddi setting.
    Drop real sprite PNGs into assets/sprites/ using the EXACT filenames
    listed in SPRITE_FILES below (matches the "Thalapathy Sprite" folder
@@ -32,7 +32,7 @@ const SPRITE_FILES = {
     walk:   ["villan walk 1.png","villan walk 2.png"],
     attack: ["Villan Attack 1.png","villsn attack 2.png","villsn attack 3.png"],
     hurt:   ["villain hurt 1.png","villain hurt 2.png"],
-    death:  ["villan death 1.png","villan death 2.png","Villan 2.png"],
+    death:  ["villan death 1.png","villan death 2.png"],
     sprint: ["Sprint villan .png"]
   }
 };
@@ -59,44 +59,92 @@ const LEVELS = [
     enemySpeed: 1.0,
     theme: "street",
     intro: "The fuse carrier from the electric pole is missing. The whole Naripaddi area is in a power cut.",
-    outro: "There is a gang here. But the fuse carrier is not with them. Go deeper and continue."
+    outro: "There is a gang here. But the fuse carrier is not with them. Go deeper and continue.",
+    isBoss: false
   },
-
   {
     name: "MARKET FIGHT",
     enemyCount: 6,
     enemySpeed: 1.08,
     theme: "market",
     intro: "The market is full of gang members. Someone must reveal who stole it... but first, clear this area.",
-    outro: "The market gang is defeated. The next clue says the thief was seen near the bus stand."
+    outro: "The market gang is defeated. The next clue says the thief was seen near the bus stand.",
+    isBoss: false
   },
-
   {
     name: "BUS STAND FIGHT",
     enemyCount: 7,
     enemySpeed: 1.15,
     theme: "busstand",
     intro: "A stronger gang is waiting at the bus stand. This was only the warm-up. The truth about the thief will be revealed here.",
-    outro: "One of them confessed — the fuse carrier was taken to the factory hideout."
+    outro: "One of them confessed — the fuse carrier was taken to the factory hideout.",
+    isBoss: false
   },
-
   {
     name: "FACTORY HIDEOUT",
     enemyCount: 8,
     enemySpeed: 1.2,
     theme: "factory",
-    intro: "This is the hideout. The boss’s guards are waiting inside. This is the final gang. Cross this and the thief will be revealed.",
-    outro: "The hideout is clear. Only one step remains — the real thief is waiting face to face."
-  },
-
-  {
-    name: "BOSS FIGHT",
-    enemyCount: 1,
-    enemySpeed: 1.35,
-    theme: "boss",
+    intro: "The first boss guard arrives. Defeat him and the real thief's location will be revealed.",
+    outro: "The first boss is defeated. But there are more powerful forces ahead.",
     isBoss: true,
-    intro: "This is the man who stole the fuse carrier from the electric pole. He has both a gun and deadly melee skills. Defeat him, and Naripaddi will get its power back.",
-    outro: "The fuse carrier has been recovered. The electric pole is back online. Naripaddi is safe again."
+    bossName: "FIRST BOSS GUARD"
+  },
+  {
+    name: "WAREHOUSE DISTRICT",
+    enemyCount: 9,
+    enemySpeed: 1.25,
+    theme: "warehouse",
+    intro: "The warehouse district is a stronghold. More gang members await. Push forward.",
+    outro: "The warehouse is clear. But something bigger awaits ahead.",
+    isBoss: false
+  },
+  {
+    name: "DOCKSIDE BRAWL",
+    enemyCount: 10,
+    enemySpeed: 1.3,
+    theme: "dock",
+    intro: "At the docks, rival gang territories collide. The strongest fighters guard this place.",
+    outro: "The docks are yours now. One more major obstacle remains.",
+    isBoss: false
+  },
+  {
+    name: "SECOND BOSS ENCOUNTER",
+    enemyCount: 1,
+    enemySpeed: 1.4,
+    theme: "garage",
+    intro: "The second boss appears. This one is faster and more brutal. No mercy.",
+    outro: "The second boss is down. Only one final confrontation remains.",
+    isBoss: true,
+    bossName: "SECOND GUARDIAN"
+  },
+  {
+    name: "UNDERPASS GANG",
+    enemyCount: 11,
+    enemySpeed: 1.35,
+    theme: "underpass",
+    intro: "The underpass is controlled by a ruthless faction. Fight through them.",
+    outro: "The underpass is cleared. The path to the final confrontation is open.",
+    isBoss: false
+  },
+  {
+    name: "INDUSTRIAL CORE",
+    enemyCount: 12,
+    enemySpeed: 1.4,
+    theme: "industrial",
+    intro: "This is the inner sanctum. The most dangerous fighters defend this fortress.",
+    outro: "The industrial core falls. The thief is cornered.",
+    isBoss: false
+  },
+  {
+    name: "FINAL SHOWDOWN",
+    enemyCount: 1,
+    enemySpeed: 1.5,
+    theme: "boss",
+    intro: "This is the man who stole the fuse carrier from the electric pole. MOOTHA THALAIVAN — THE FUSE THIEF. He has both a gun and deadly melee skills. Defeat him, and Naripaddi will get its power back.",
+    outro: "The fuse carrier has been recovered. The electric pole is back online. Naripaddi is safe again.",
+    isBoss: true,
+    bossName: "MOOTHA THALAIVAN — THE FUSE THIEF"
   }
 ];
 
@@ -158,13 +206,15 @@ function loadAll(){
       SPRITE_FILES[role][anim].forEach((file, i)=>{
         const key = `${role}.${anim}.${i}`;
         const entry = { img: new Image(), ok: false };
-        entry.img.onload = ()=>{ entry.ok = true; };
-        entry.img.onerror = ()=>{ entry.ok = false; };
-        entry.img.src = SPRITE_DIR + encodeURIComponent(file).replace(/%20/g,"%20");
+        const path = SPRITE_DIR + file;
+        entry.img.onload = ()=>{ entry.ok = true; console.log("✓ Loaded:", path); };
+        entry.img.onerror = ()=>{ entry.ok = false; console.warn("✗ Failed:", path); };
+        entry.img.src = path;
         imageCache[key] = entry;
       });
     }
   }
+  console.log("Sprite loading initiated. Cache keys:", Object.keys(imageCache).length);
 }
 loadAll();
 
@@ -174,26 +224,74 @@ function getFrame(role, anim, index){
 }
 
 /* ============================ AUDIO / SFX ============================ */
-// audio files should be placed in assets/audio/ (optional). Missing files are silently ignored.
-const AUDIO = {
-  music: new Audio("assets/audio/Bgm.mp3"),
-  sfxShoot: new Audio("assets/audio/sfx_shoo.wav"),
-  sfxHit: new Audio("assets/audio/sfx_hit.wav"),
-  sfxCollect: new Audio("assets/audio/sfx_collect.wav"),
-  sfxEmpty: new Audio("assets/audio/sfx_empty.wav"),
-  sfxGameOver: new Audio("assets/audio/sfx_gameover.mp3")
+// Initialize audio using files in assets/audio/ when available, with fallbacks.
+const AUDIO_FILES = {
+  music: "assets/audio/Bgm.mp3",
+  sfxShoot: "assets/audio/sfx_shoo.wav",
+  sfxHit: "assets/audio/sfx_hit.wav",
+  sfxCollect: "assets/audio/sfx_collect.wav",
+  sfxEmpty: "assets/audio/sfx_shoo.wav",
+  sfxGameOver: "assets/audio/sfx_gameover.mp3"
+};
+
+const AUDIO = {};
+for(const k of Object.keys(AUDIO_FILES)){
+  try{
+    AUDIO[k] = new Audio(AUDIO_FILES[k]);
+    AUDIO[k].preload = 'auto';
+    AUDIO[k].loop = (k==='music');
+    AUDIO[k].volume = (k==='music')?0.45:0.9;
+    AUDIO[k].onerror = ()=>{ /* ignore load errors */ };
+  }catch(e){
+    AUDIO[k] = { play: ()=>Promise.resolve(), pause: ()=>{}, currentTime:0, preload:'auto', loop:false, volume:1, onerror: ()=>{} };
+  }
+}
+AUDIO.sfxEmpty = {
+  play: () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.04);
+    } catch(e) {}
+    return Promise.resolve();
+  },
+  pause: () => {},
+  currentTime: 0,
+  volume: 1
 };
 let audioEnabled = true;
-for(const k of Object.keys(AUDIO)){
-  AUDIO[k].preload = 'auto';
-  AUDIO[k].loop = (k==='music');
-  AUDIO[k].volume = (k==='music')?0.45:0.9;
-  AUDIO[k].onerror = ()=>{};
-}
 function playSfx(key){ if(!audioEnabled) return; try{ const a=AUDIO[key]; if(a){ a.currentTime=0; a.play().catch(()=>{}); } }catch(e){} }
 function playMusic(){ if(!audioEnabled) return; try{ AUDIO.music.play().catch(()=>{}); }catch(e){} }
 function stopMusic(){ try{ AUDIO.music.pause(); AUDIO.music.currentTime=0; }catch(e){} }
 
+/* ============================ HIGH SCORE TRACKING ============================ */
+
+function loadHighScore(){
+  const saved = localStorage.getItem('thalapathy_high_score');
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+function saveHighScore(score){
+  const current = loadHighScore();
+  if(score > current) localStorage.setItem('thalapathy_high_score', score);
+}
+
+function loadMaxWave(){
+  const saved = localStorage.getItem('thalapathy_max_wave');
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+function saveMaxWave(wave){
+  const current = loadMaxWave();
+  if(wave > current) localStorage.setItem('thalapathy_max_wave', wave);
+}
 
 /* ============================ INPUT ============================ */
 
@@ -227,6 +325,12 @@ function pressed(k){ return !!keys[k]; }
 /* ============================ PARTICLES (impact sparks) ============================ */
 
 let particles = [];
+let floatTexts = [];
+let screenShake = 0;
+
+function spawnFloatText(x, y, text, color){
+  floatTexts.push({ x, y, text, color, life: 40, vy: -1.2 });
+}
 function spawnSpark(x,y,color){
   for(let i=0;i<6;i++){
     particles.push({
@@ -240,6 +344,9 @@ function spawnSpark(x,y,color){
 function updateParticles(){
   particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.3; p.life--; });
   particles = particles.filter(p=>p.life>0);
+  
+  floatTexts.forEach(ft => { ft.y += ft.vy; ft.life--; });
+  floatTexts = floatTexts.filter(ft => ft.life > 0);
 }
 function drawParticles(camX){
   particles.forEach(p=>{
@@ -248,33 +355,52 @@ function drawParticles(camX){
     ctx.fillRect(p.x-camX, p.y, 4,4);
   });
   ctx.globalAlpha = 1;
+  
+  floatTexts.forEach(ft => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, ft.life / 40);
+    ctx.fillStyle = ft.color || "#ffffff";
+    ctx.font = "bold 16px Rajdhani";
+    ctx.textAlign = "center";
+    ctx.fillText(ft.text, ft.x - camX, ft.y);
+    ctx.restore();
+  });
 }
 
-/* ============================ PICKUPS (FUSES) ============================ */
+/* ============================ PICKUPS (FUSES & KAMBAM) ============================ */
 let pickups = [];
 function spawnFuse(x){
-  pickups.push({ x:x, y: GROUND_Y-28, collected:false });
+  pickups.push({ x:x, y: GROUND_Y-28, collected:false, type: 'fuse' });
+}
+function spawnKambam(x){
+  pickups.push({ x:x, y: GROUND_Y-28, collected:false, type: 'kambam' });
 }
 function spawnPickupsForLevel(lvl){
   pickups = [];
   // spawn 1-3 fuses for non-boss levels, boss level gives a larger ammo pack
-  if(lvl.isBoss){ spawnFuse(Math.min(game.world.width-120, game.player.x+420));
+  if(lvl.isBoss){
+    spawnFuse(Math.min(game.world.width-120, (game.player?game.player.x:0)+420));
   } else {
-    const count = 1 + Math.floor(Math.random()*2);
-    for(let i=0;i<count;i++) spawnFuse(Math.min(game.world.width-120, game.player.x + 300 + i*140 + Math.random()*180));
+    const count = 1 + Math.floor(Math.random()*3);
+    for(let i=0;i<count;i++){
+      const x = 200 + Math.floor(Math.random()*(Math.max(0, game.world.width-400)));
+      spawnFuse(x);
+    }
   }
 }
+
 function drawPickups(camX){
-  pickups.forEach(p=>{
-    if(p.collected) return;
+  pickups.forEach(pk=>{
+    if(pk.collected) return;
+    const sx = pk.x - camX;
+    if(sx < -50 || sx > CW+50) return; // cull off-screen
     ctx.save();
-    ctx.translate(p.x-camX, p.y);
-    // simple fuse sprite: glowing cylinder
-    const gx = 0, gy = 0;
-    ctx.fillStyle = "#ffcc33";
-    ctx.fillRect(gx-10, gy-8, 20,16);
-    ctx.fillStyle = "#333";
-    ctx.fillRect(gx-10, gy-8, 4,16);
+    ctx.fillStyle = pk.type==="fuse" ? "#ffd700" : pk.type==="ammo" ? "#00ffcc" : pk.type==="health" ? "#ff3333" : "#ff6b9d";
+    ctx.shadowColor = pk.type==="fuse" ? "#ffd700" : pk.type==="ammo" ? "#00ffcc" : pk.type==="health" ? "#ff3333" : "#ff6b9d";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(sx, pk.y, 14, 0, Math.PI*2);
+    ctx.fill();
     ctx.restore();
   });
 }
@@ -297,7 +423,7 @@ function updateAmmoHUD(){
 
 function drawFallback(roleColor, x, y, w, h, facing, pose){
   ctx.save();
-  ctx.translate(x + w/2, y + h);
+  ctx.translate(x + w/2, y);
   ctx.scale(facing, 1);
   const headR = w*0.22;
   ctx.fillStyle = roleColor;
@@ -306,31 +432,31 @@ function drawFallback(roleColor, x, y, w, h, facing, pose){
 
   // legs
   let legSpread = pose==="walk"||pose==="sprint" ? w*0.18 : w*0.08;
-  ctx.fillRect(-w*0.16-legSpread*0.3, -h*0.42, w*0.14, h*0.42);
-  ctx.fillRect(w*0.02+legSpread*0.3, -h*0.42, w*0.14, h*0.42);
+  ctx.fillRect(-w*0.16-legSpread*0.3, h*0.58, w*0.14, h*0.42);
+  ctx.fillRect(w*0.02+legSpread*0.3, h*0.58, w*0.14, h*0.42);
 
   // torso
-  ctx.fillRect(-w*0.22, -h*0.78, w*0.44, h*0.4);
+  ctx.fillRect(-w*0.22, h*0.22, w*0.44, h*0.4);
 
   // arms by pose
   ctx.fillStyle = roleColor;
   if(pose==="punch"){
-    ctx.fillRect(w*0.18, -h*0.7, w*0.42, h*0.13);
+    ctx.fillRect(w*0.18, h*0.3, w*0.42, h*0.13);
   } else if(pose==="kick"){
-    ctx.fillRect(-w*0.1, -h*0.45, w*0.55, h*0.13);
+    ctx.fillRect(-w*0.1, h*0.55, w*0.55, h*0.13);
   } else if(pose==="shoot"){
-    ctx.fillRect(w*0.18, -h*0.62, w*0.5, h*0.08);
+    ctx.fillRect(w*0.18, h*0.38, w*0.5, h*0.08);
   } else if(pose==="hurt"){
-    ctx.fillRect(-w*0.32, -h*0.6, w*0.2, h*0.18);
-    ctx.fillRect(w*0.12, -h*0.6, w*0.2, h*0.18);
+    ctx.fillRect(-w*0.32, h*0.4, w*0.2, h*0.18);
+    ctx.fillRect(w*0.12, h*0.4, w*0.2, h*0.18);
   } else {
-    ctx.fillRect(-w*0.3, -h*0.74, w*0.12, h*0.32);
-    ctx.fillRect(w*0.18, -h*0.74, w*0.12, h*0.32);
+    ctx.fillRect(-w*0.3, h*0.26, w*0.12, h*0.32);
+    ctx.fillRect(w*0.18, h*0.26, w*0.12, h*0.32);
   }
 
   // head
   ctx.beginPath();
-  ctx.arc(0, -h*0.78-headR*0.7, headR, 0, Math.PI*2);
+  ctx.arc(0, h*0.22-headR*0.7, headR, 0, Math.PI*2);
   ctx.fill();
   ctx.stroke();
 
@@ -473,6 +599,8 @@ class Player extends Entity{
     if(this.invuln>0 || this.health<=0) return;
     this.health = Math.max(0, this.health-dmg);
     this.invuln = 380;
+    screenShake = Math.max(screenShake, 8);
+    spawnFloatText(this.x + this.w/2, this.y + 20, `-${dmg} HP`, "#ff4444");
     if(this.health>0){ this.setState("hurt"); this.attackLock=0; playSfx('sfxHit'); }
   }
 
@@ -529,7 +657,7 @@ class Enemy extends Entity{
   constructor(x, speedMult, isBoss){
     super(x, GROUND_Y-ENEMY_H, isBoss?ENEMY_W*1.25:ENEMY_W, isBoss?ENEMY_H*1.2:ENEMY_H);
     this.isBoss = isBoss;
-    this.maxHealth = isBoss ? 260 : 32;
+    this.maxHealth = isBoss ? 320 : 32;
     this.health = this.maxHealth;
     this.speed = (isBoss?2.6:1.6) * speedMult;
     this.aggroRange = isBoss?900:520;
@@ -539,7 +667,10 @@ class Enemy extends Entity{
     this.hurtTimer = 0;
     this.deadTimer = 0;
     this.removeMe = false;
-    this.gunCooldown = isBoss ? 1800 : Infinity;
+    this.gunCooldown = isBoss ? 2000 : Infinity;
+    this.punchCooldown = isBoss ? 0 : Infinity;
+    this.kickCooldown = isBoss ? 0 : Infinity;
+    this.attackType = null; // 'punch', 'kick', or 'shoot' for boss
   }
 
   update(dt, player, onShoot){
@@ -558,6 +689,8 @@ class Enemy extends Entity{
     }
     if(this.attackCooldown>0) this.attackCooldown -= dt;
     if(this.gunCooldown>0 && this.gunCooldown!==Infinity) this.gunCooldown -= dt;
+    if(this.punchCooldown>0 && this.punchCooldown!==Infinity) this.punchCooldown -= dt;
+    if(this.kickCooldown>0 && this.kickCooldown!==Infinity) this.kickCooldown -= dt;
 
     const dx = player.x - this.x;
     const dist = Math.abs(dx);
@@ -574,11 +707,24 @@ class Enemy extends Entity{
         // in range: attack
         if(this.attackCooldown<=0){
           this.setState("attack");
-          this.attackCooldown = this.isBoss?900:1500;
+          this.attackCooldown = this.isBoss?700:1500;
           this.attackDealt = false;
           this._attackPlayer = player;
-          if(this.isBoss && Math.random()<0.5 && onShoot){
-            onShoot(this.x, this.y+this.h*0.4, this.facing);
+          
+          if(this.isBoss){
+            // Boss AI: vary attacks
+            const rand = Math.random();
+            if(rand < 0.35 && this.gunCooldown <= 0){
+              this.attackType = 'shoot';
+              this.gunCooldown = 2000;
+              onShoot(this.x, this.y+this.h*0.4, this.facing);
+            } else if(rand < 0.65 && this.punchCooldown <= 0){
+              this.attackType = 'punch';
+              this.punchCooldown = 1200;
+            } else if(this.kickCooldown <= 0){
+              this.attackType = 'kick';
+              this.kickCooldown = 1400;
+            }
           }
         }
         if(this.state==="attack"){
@@ -587,10 +733,14 @@ class Enemy extends Entity{
           if(!this.attackDealt && this.frame>=Math.floor(arr.length/2)){
             this.attackDealt = true;
             if(Math.abs(player.x-this.x) < this.attackRange+20){
-              player.takeDamage(this.isBoss?16:7);
+              const dmg = this.isBoss ? 18 : 7;
+              player.takeDamage(dmg);
             }
           }
-          if(finished){ this.setState("idle"); }
+          if(finished){ 
+            this.setState("idle"); 
+            this.attackType = null;
+          }
         } else {
           this.setState("idle");
           this.advanceFrame(dt, SPRITE_FILES.villain.idle.length, true, 400);
@@ -607,6 +757,8 @@ class Enemy extends Entity{
     this.health = Math.max(0, this.health-dmg);
     // play hit sound for enemy when damaged
     playSfx('sfxHit');
+    screenShake = Math.max(screenShake, 3);
+    spawnFloatText(this.x + this.w/2, this.y + 20, `-${dmg}`, "#ffd23f");
     if(this.health<=0){
       this.setState("death");
     } else {
@@ -732,7 +884,8 @@ function drawBackground(camX, theme){
 function themeShopName(theme){
   return ({
     street:"SARAVANA TEA KADAI", market:"NARIPADDI SANDHAI",
-    busstand:"SALEM BUS STAND", factory:"VEERA STEEL WORKS", boss:"OLD POWER GODOWN"
+    busstand:"SALEM BUS STAND", factory:"VEERA STEEL WORKS", warehouse:"WAREHOUSE", dock:"DOCK",
+    garage:"GARAGE", underpass:"UNDERPASS", industrial:"INDUSTRIAL", boss:"OLD POWER GODOWN"
   })[theme] || "SALEM TOWN";
 }
 
@@ -749,7 +902,18 @@ function drawShopBoard(x,y,text){
 
 /* ============================ GAME STATE ============================ */
 
-const STATE = { MENU:"menu", STORY:"story", PLAYING:"playing", LEVEL_DONE:"level_done", BOSS_INTRO:"boss_intro", VICTORY:"victory", GAMEOVER:"gameover" };
+const STATE = { 
+  MENU:"menu", 
+  STORY:"story", 
+  PLAYING:"playing", 
+  LEVEL_DONE:"level_done", 
+  BOSS_INTRO:"boss_intro", 
+  MISSION_COMPLETE:"mission_complete", 
+  VICTORY:"victory", 
+  GAMEOVER:"gameover",
+  WAVE_DEFENSE:"wave_defense", 
+  SURVIVAL:"survival"
+};
 
 const game = {
   state: STATE.MENU,
@@ -763,7 +927,14 @@ const game = {
   spawnTimer: 0,
   enemiesSpawned: 0,
   bossIntroTimer: 0,
-  lastTime: 0
+  lastTime: 0,
+  endless: false,
+  wave: 0,
+  fuseCollected: false,
+  kambamFound: false,
+  gameMode: "story", // "story", "wave", "defense", "survival"
+  kambamHealth: 100,
+  kambamMaxHealth: 100
 };
 
 const hud = document.getElementById("hud");
@@ -788,6 +959,8 @@ function startLevel(idx){
   game.spawnTimer = 600;
   game.player = new Player();
   game.camX = 0;
+  game.fuseCollected = false;
+  game.kambamFound = false;
   const lvl = LEVELS[idx];
   elLevelLabel.textContent = `LEVEL ${idx+1} / ${LEVELS.length} — ${lvl.name}`;
   elKillLabel.textContent = lvl.isBoss ? "DEFEAT THE BOSS" : `TARGETS DOWN: 0 / ${lvl.enemyCount}`;
@@ -834,7 +1007,7 @@ function spawnEnemy(isBoss){
     : game.player.x + 420 + Math.random()*220;
   const clampedX = Math.min(spawnX, game.world.width-100);
   const e = new Enemy(clampedX, lvl.enemySpeed, !!isBoss);
-  if(isBoss) elBossName.textContent = "MOOTHA THALAIVAN — THE FUSE THIEF";
+  if(isBoss) elBossName.textContent = lvl.bossName || "THE BOSS";
   game.enemies.push(e);
   game.enemiesSpawned++;
 }
@@ -861,6 +1034,7 @@ function onPlayerShootBullet(){
   p.ammo = Math.max(0, p.ammo-1);
   updateAmmoHUD();
   playSfx("sfxShoot");
+  screenShake = Math.max(screenShake, 4);
   const bx = p.x + (p.facing===1 ? p.w : 0);
   game.bullets.push(new Bullet(bx, p.y+p.h*0.45, p.facing, "player", SHOOT_DMG));
 }
@@ -880,6 +1054,15 @@ function handleAttackInput(){
   if(l) p.tryAttack("shoot", ()=>onPlayerShootBullet());
 }
 
+function spawnEnemyDrop(x){
+  const rand = Math.random();
+  if(rand < 0.25){
+    pickups.push({ x: x, y: GROUND_Y-28, collected: false, type: 'ammo' });
+  } else if(rand < 0.45){
+    pickups.push({ x: x, y: GROUND_Y-28, collected: false, type: 'health' });
+  }
+}
+
 function meleeHit(range, dmg){
   const p = game.player;
   for(const e of game.enemies){
@@ -888,22 +1071,162 @@ function meleeHit(range, dmg){
     if(Math.sign(dx||1)===p.facing && Math.abs(dx) < range){
       e.takeDamage(dmg);
       spawnSpark(e.x+e.w/2 - game.camX, e.y+e.h*0.4, "#ffcc33");
-      if(e.health<=0) onEnemyKilled();
+      if(e.health<=0) onEnemyKilled(e);
     }
   }
 }
 
-function onEnemyKilled(){
+function onEnemyKilled(enemy){
   game.kills++;
   playSfx('sfxCollect');
   const lvl = LEVELS[game.levelIndex];
   if(!lvl.isBoss){
     elKillLabel.textContent = `TARGETS DOWN: ${game.kills} / ${lvl.enemyCount}`;
   }
+  if(enemy){
+    spawnEnemyDrop(enemy.x + enemy.w/2);
+  }
 }
 
+function triggerLevelComplete(){
+  game.state = STATE.LEVEL_DONE;
+  hud.classList.add("hidden");
+  document.getElementById("level-complete-text").textContent = LEVELS[game.levelIndex].outro;
+  showScreen("level-complete-screen");
+}
+
+function triggerMissionComplete(){
+  // Boss defeated + fuse collected + kambam activated
+  game.state = STATE.MISSION_COMPLETE;
+  hud.classList.add("hidden");
+  stopMusic();
+  showScreen("mission-complete-screen");
+}
+
+function triggerVictory(){
+  // show victory popup after beating final boss (level 10)
+  game.state = STATE.VICTORY;
+  hud.classList.add("hidden");
+  playSfx('sfxCollect');
+  stopMusic();
+  
+  const victoryStats = document.getElementById('victory-stats');
+  if(victoryStats){
+    const highScore = loadHighScore();
+    victoryStats.textContent = `FINAL SCORE: ${game.player.score} | HIGH SCORE: ${highScore}`;
+  }
+  
+  saveHighScore(game.player.score);
+  showScreen("victory-screen");
+}
+
+function triggerGameOver(){
+  game.state = STATE.GAMEOVER;
+  hud.classList.add("hidden");
+  playSfx('sfxGameOver');
+  stopMusic();
+  
+  if(game.endless){
+    document.getElementById('gameover-story-buttons').classList.add('hidden');
+    document.getElementById('gameover-endless-buttons').classList.remove('hidden');
+    saveMaxWave(game.wave);
+  } else {
+    document.getElementById('gameover-story-buttons').classList.remove('hidden');
+    document.getElementById('gameover-endless-buttons').classList.add('hidden');
+  }
+  
+  showScreen("gameover-screen");
+}
+
+/* ============================ RENDER ============================ */
+
+function render(){
+  ctx.clearRect(0,0,CW,CH);
+  if(game.state===STATE.MENU || game.state===STATE.STORY && game.levelIndex===0 && !game.player){
+    drawBackground(0,"street");
+    return;
+  }
+  if(!game.player) return;
+  const lvl = LEVELS[game.levelIndex];
+
+  ctx.save();
+  if(screenShake > 0){
+    const dx = (Math.random() - 0.5) * screenShake;
+    const dy = (Math.random() - 0.5) * screenShake;
+    ctx.translate(dx, dy);
+    screenShake = Math.max(0, screenShake - 0.85);
+  }
+
+  drawBackground(game.camX, lvl.theme);
+
+  // sort by x for simple depth
+  drawPickups(game.camX);
+  const drawables = [...game.enemies].sort((a,b)=>a.x-b.x);
+  drawables.forEach(e=>e.draw(game.camX));
+  game.player.draw(game.camX);
+  game.bullets.forEach(b=>b.draw(game.camX));
+  drawParticles(game.camX);
+
+  if(game.state===STATE.BOSS_INTRO){
+    ctx.fillStyle = "#000000aa";
+    ctx.fillRect(0,CH*0.42,CW,CH*0.16);
+    ctx.textAlign="center";
+    ctx.fillStyle="#ff4324";
+    ctx.font = "bold 28px Anton, sans-serif";
+    ctx.fillText("BOSS APPROACHING", CW/2, CH*0.52);
+  }
+
+  // low health red vignette
+  if(game.player && game.player.health > 0 && game.player.health <= 30){
+    const pulse = Math.sin(Date.now() / 150) * 0.15 + 0.25;
+    const grad = ctx.createRadialGradient(CW/2, CH/2, CW*0.3, CW/2, CH/2, CW*0.6);
+    grad.addColorStop(0, "rgba(255, 0, 0, 0)");
+    grad.addColorStop(1, `rgba(255, 0, 0, ${pulse})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CW, CH);
+  }
+
+  // Draw offscreen enemy indicators
+  if(game.player){
+    game.enemies.forEach(e => {
+      if(e.health <= 0) return;
+      const ex = e.x - game.camX;
+      if(ex < 0){
+        ctx.fillStyle = e.isBoss ? "#ff3333" : "#ffcc33";
+        ctx.beginPath();
+        ctx.moveTo(15, CH * 0.5);
+        ctx.lineTo(25, CH * 0.5 - 8);
+        ctx.lineTo(25, CH * 0.5 + 8);
+        ctx.fill();
+      } else if(ex > CW){
+        ctx.fillStyle = e.isBoss ? "#ff3333" : "#ffcc33";
+        ctx.beginPath();
+        ctx.moveTo(CW - 15, CH * 0.5);
+        ctx.lineTo(CW - 25, CH * 0.5 - 8);
+        ctx.lineTo(CW - 25, CH * 0.5 + 8);
+        ctx.fill();
+      }
+    });
+  }
+
+  ctx.restore();
+}
+
+/* ============================ LOOP ============================ */
+
+function loop(t){
+  const dt = Math.min(40, t-(game.lastTime||t));
+  game.lastTime = t;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ============================ UPDATE ============================ */
+
 function update(dt){
-  if(game.state===STATE.PLAYING || game.state===STATE.BOSS_INTRO){
+  if(game.state===STATE.PLAYING || game.state===STATE.BOSS_INTRO || game.state===STATE.WAVE_DEFENSE || game.state===STATE.SURVIVAL){
     const lvl = LEVELS[game.levelIndex];
     const p = game.player;
 
@@ -919,7 +1242,7 @@ function update(dt){
     if(!lvl.isBoss || game.endless){
       game.spawnTimer -= dt;
       const activeAlive = game.enemies.filter(e=>e.health>0).length;
-      if(game.endless){
+      if(game.endless && game.gameMode === "story"){
         // Infinite wave mode: spawn by wave, scaling stats; boss every 5 waves
         if(!game.wave) { game.wave = 1; game.waveEnemyCount = 3; game.waveSpawned = 0; game.waveBossSpawned = false; }
         // Boss wave every 5th wave
@@ -937,6 +1260,7 @@ function update(dt){
             game.waveSpawned = 0;
             game.waveBossSpawned = false;
             game.spawnTimer = 900;
+            screenShake = Math.max(screenShake, 18);
           }
         } else {
           // normal wave spawning
@@ -957,6 +1281,109 @@ function update(dt){
         // update wave HUD
         const elWave = document.getElementById('wave-hud');
         if(elWave) elWave.textContent = `WAVE: ${game.wave}  MODE: INFINITE`;
+      } else if(game.gameMode === "defense"){
+        // ===== WAVE DEFENSE MODE: Defend the kambam =====
+        if(!game.wave) { 
+          game.wave = 1; 
+          game.waveEnemyCount = 3; 
+          game.waveSpawned = 0; 
+          game.waveBossSpawned = false; 
+        }
+        
+        // Boss wave every 5th wave
+        if(game.wave % 5 === 0){
+          if(!game.waveBossSpawned && game.spawnTimer <= 0){
+            spawnEndlessEnemy(true);
+            game.waveBossSpawned = true;
+            game.spawnTimer = 1200;
+          }
+          const bossAlive = game.enemies.find(e=>e.isBoss && e.health>0);
+          if(!bossAlive && game.waveBossSpawned){
+            game.wave++;
+            game.waveSpawned = 0;
+            game.waveBossSpawned = false;
+            game.spawnTimer = 900;
+          }
+        } else {
+          // Normal enemy spawning
+          if(game.waveSpawned < game.waveEnemyCount && game.spawnTimer <= 0){
+            spawnEndlessEnemy(false);
+            game.waveSpawned++;
+            game.spawnTimer = 420;
+          }
+          const alive = game.enemies.filter(e=>e.health>0).length;
+          if(game.waveSpawned >= game.waveEnemyCount && alive===0){
+            game.wave++;
+            game.waveSpawned = 0;
+            game.waveEnemyCount = 3 + Math.floor((game.wave-1)*0.5);
+            game.spawnTimer = 1000;
+          }
+        }
+        
+        // Enemies attack the kambam (only if close to it, e.g. x = 300)
+        game.enemies.forEach(e=>{
+          if(e.health > 0 && Math.abs(e.x - 300) < e.attackRange + 30 && Math.random() < 0.004){
+            // Boss deals more damage to kambam
+            const dmg = e.isBoss ? 8 : 3;
+            game.kambamHealth = Math.max(0, game.kambamHealth - dmg);
+            if(game.kambamHealth <= 0){
+              triggerGameOver();
+            }
+          }
+        });
+        
+        // Update kambam health HUD
+        const elWaveDefense = document.getElementById('wave-hud');
+        if(elWaveDefense) {
+          elWaveDefense.textContent = `WAVE: ${game.wave}  KAMBAM: ${game.kambamHealth}%`;
+        }
+        
+      } else if(game.gameMode === "survival"){
+        // ===== SURVIVAL MODE: Pure infinite fighting =====
+        if(!game.wave) { 
+          game.wave = 1; 
+          game.waveEnemyCount = 4; 
+          game.waveSpawned = 0; 
+          game.waveBossSpawned = false; 
+        }
+        
+        // Boss wave every 5th wave
+        if(game.wave % 5 === 0){
+          if(!game.waveBossSpawned && game.spawnTimer <= 0){
+            spawnEndlessEnemy(true);
+            game.waveBossSpawned = true;
+            game.spawnTimer = 1200;
+          }
+          const bossAlive = game.enemies.find(e=>e.isBoss && e.health>0);
+          if(!bossAlive && game.waveBossSpawned){
+            game.wave++;
+            game.waveSpawned = 0;
+            game.waveBossSpawned = false;
+            game.spawnTimer = 900;
+          }
+        } else {
+          // Faster enemy spawning in survival
+          if(game.waveSpawned < game.waveEnemyCount && game.spawnTimer <= 0){
+            spawnEndlessEnemy(false);
+            game.waveSpawned++;
+            game.spawnTimer = 300; // Faster than wave defense
+          }
+          const alive = game.enemies.filter(e=>e.health>0).length;
+          if(game.waveSpawned >= game.waveEnemyCount && alive===0){
+            game.wave++;
+            game.waveSpawned = 0;
+            // Faster scaling in survival
+            game.waveEnemyCount = 4 + Math.floor((game.wave-1)*0.7);
+            game.spawnTimer = 800;
+          }
+        }
+        
+        // Update survival HUD
+        const elWaveSurvival = document.getElementById('wave-hud');
+        if(elWaveSurvival) {
+          elWaveSurvival.textContent = `WAVE: ${game.wave}  SURVIVAL: ON`;
+        }
+
       } else {
         if(game.spawnTimer<=0 && activeAlive<3 && game.enemiesSpawned<lvl.enemyCount){
           spawnEnemy(false);
@@ -968,6 +1395,24 @@ function update(dt){
     game.enemies.forEach(e=>{
       e.update(dt, p, onEnemyShootBullet);
     });
+    
+    // Check boss defeat BEFORE filtering out dead enemies
+    if(lvl.isBoss && !game.endless){
+      const boss = game.enemies.find(e=>e.isBoss);
+      if(boss && boss.health<=0){
+        playSfx('sfxCollect'); // Boss defeat sound
+        screenShake = Math.max(screenShake, 18);
+        if(game.levelIndex === LEVELS.length - 1){
+          // Final boss -> Victory screen
+          triggerVictory();
+        } else {
+          // Regular boss -> Auto-advance to next level
+          showScreen(null);
+          startLevel(game.levelIndex + 1);
+        }
+      }
+    }
+    
     game.enemies = game.enemies.filter(e=>!e.removeMe);
 
     game.bullets.forEach(b=>{
@@ -979,7 +1424,7 @@ function update(dt){
             e.takeDamage(SHOOT_DMG);
             spawnSpark(b.x-game.camX, b.y, "#ffd23f");
             b.dead = true;
-            if(e.health<=0) onEnemyKilled();
+            if(e.health<=0) onEnemyKilled(e);
           }
         }
       } else {
@@ -997,12 +1442,36 @@ function update(dt){
     pickups.forEach(pk=>{
       if(pk.collected) return;
       const p = game.player;
+      if(pk.type === 'kambam_defense') return; // Do not collect the defense kambam!
       if(Math.abs((p.x+p.w/2) - pk.x) < 48){
         pk.collected = true;
-        p.ammo = Math.min(p.maxAmmo, p.ammo + 2);
-        p.score += 40;
         playSfx('sfxCollect');
-        updateAmmoHUD();
+        
+        if(pk.type === 'fuse'){
+          p.ammo = Math.min(p.maxAmmo, p.ammo + 2);
+          p.score += 40;
+          game.fuseCollected = true;
+          // If this is a boss level, spawn kambam
+          if(LEVELS[game.levelIndex].isBoss && !game.endless){
+            spawnKambam(Math.min(game.world.width-120, p.x+520));
+          }
+          updateAmmoHUD();
+        } else if(pk.type === 'kambam'){
+          p.score += 200;
+          game.kambamFound = true;
+          document.getElementById('current-status').textContent = `CURRENT: ON`;
+          updateAmmoHUD();
+        } else if(pk.type === 'ammo'){
+          p.ammo = Math.min(p.maxAmmo, p.ammo + 5);
+          p.score += 50;
+          spawnFloatText(p.x + p.w/2, p.y + 20, `+5 Ammo`, "#00ffcc");
+          updateAmmoHUD();
+        } else if(pk.type === 'health'){
+          p.health = Math.min(p.maxHealth, p.health + 20);
+          p.score += 50;
+          spawnFloatText(p.x + p.w/2, p.y + 20, `+20 HP`, "#00ff66");
+          elPlayerHealth.style.width = `${p.health}%`;
+        }
       }
     });
 
@@ -1014,21 +1483,20 @@ function update(dt){
 
     // HUD updates
     elPlayerHealth.style.width = `${p.health}%`;
-    if(lvl.isBoss){
-      const boss = game.enemies.find(e=>e.isBoss);
-      if(boss) elBossHealth.style.width = `${(boss.health/boss.maxHealth)*100}%`;
+    const activeBoss = game.enemies.find(e=>e.isBoss && e.health>0);
+    if(activeBoss){
+      elBossWrap.classList.remove("hidden");
+      elBossName.textContent = game.endless ? `WAVE BOSS` : lvl.bossName || "THE BOSS";
+      elBossHealth.style.width = `${(activeBoss.health/activeBoss.maxHealth)*100}%`;
+    } else {
+      elBossWrap.classList.add("hidden");
     }
 
     // win/lose checks
     if(p.health<=0 && p.deathTimer>900){
       triggerGameOver();
     }
-    if(lvl.isBoss){
-      const boss = game.enemies.find(e=>e.isBoss);
-      if(boss && boss.health<=0 && boss.removeMe){
-        triggerVictory();
-      }
-    } else {
+    if(!lvl.isBoss){
       if(game.kills>=lvl.enemyCount){
         triggerLevelComplete();
       }
@@ -1036,76 +1504,10 @@ function update(dt){
   }
 }
 
-function triggerLevelComplete(){
-  game.state = STATE.LEVEL_DONE;
-  hud.classList.add("hidden");
-  document.getElementById("level-complete-text").textContent = LEVELS[game.levelIndex].outro;
-  showScreen("level-complete-screen");
-}
-function triggerVictory(){
-  // show victory popup after beating boss
-  game.state = STATE.VICTORY;
-  hud.classList.add("hidden");
-  playSfx('sfxCollect');
-  stopMusic();
-  const victoryStats = document.getElementById('victory-stats');
-  if(victoryStats){
-    victoryStats.textContent = `FINAL SCORE: ${game.player.score} | HERO HEALTH: ${game.player.health}%`;
-  }
-  showScreen("victory-screen");
-}
-function triggerGameOver(){
-  game.state = STATE.GAMEOVER;
-  hud.classList.add("hidden");
-  playSfx('sfxGameOver');
-  stopMusic();
-  showScreen("gameover-screen");
-}
-
-/* ============================ RENDER ============================ */
-
-function render(){
-  ctx.clearRect(0,0,CW,CH);
-  if(game.state===STATE.MENU || game.state===STATE.STORY && game.levelIndex===0 && !game.player){
-    drawBackground(0,"street");
-    return;
-  }
-  if(!game.player) return;
-  const lvl = LEVELS[game.levelIndex];
-  drawBackground(game.camX, lvl.theme);
-
-  // sort by x for simple depth
-  drawPickups(game.camX);
-  const drawables = [...game.enemies].sort((a,b)=>a.x-b.x);
-  drawables.forEach(e=>e.draw(game.camX));
-  game.player.draw(game.camX);
-  game.bullets.forEach(b=>b.draw(game.camX));
-  drawParticles(game.camX);
-
-  if(game.state===STATE.BOSS_INTRO){
-    ctx.fillStyle = "#000000aa";
-    ctx.fillRect(0,CH*0.42,CW,CH*0.16);
-    ctx.textAlign="center";
-    ctx.fillStyle="#ff4324";
-    ctx.font = "bold 28px Anton, sans-serif";
-    ctx.fillText("MOOTHA THALAIVAN APPEARS", CW/2, CH*0.52);
-  }
-}
-
-/* ============================ LOOP ============================ */
-
-function loop(t){
-  const dt = Math.min(40, t-(game.lastTime||t));
-  game.lastTime = t;
-  update(dt);
-  render();
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
 /* ============================ UI WIRING ============================ */
 
-document.getElementById("start-btn").addEventListener("click", ()=>{
+const startBtnEl = document.getElementById("start-btn");
+if(startBtnEl) startBtnEl.addEventListener("click", ()=>{
   showScreen(null);
   startLevel(0);
 });
@@ -1124,26 +1526,31 @@ if(optMusic){ optMusic.addEventListener('change', (e)=>{ audioEnabled = optMusic
 if(optSfx){ optSfx.addEventListener('change', (e)=>{ if(!optSfx.checked) { for(const k of Object.keys(AUDIO)) if(k!=='music') AUDIO[k].muted = true; } else { for(const k of Object.keys(AUDIO)) AUDIO[k].muted = false; } }); }
 
 const exitBtn = document.getElementById('exit-btn');
-if(exitBtn) exitBtn.addEventListener('click', ()=>{ if(confirm('Exit to menu?')) location.reload(); });
+if(exitBtn) exitBtn.addEventListener('click', ()=>{ location.reload(); });
 
-document.getElementById("next-level-btn").addEventListener("click", ()=>{
+const nextLevelBtn = document.getElementById("next-level-btn");
+if(nextLevelBtn) nextLevelBtn.addEventListener("click", ()=>{
   showScreen(null);
   const next = game.levelIndex+1;
   if(next < LEVELS.length) startLevel(next);
   else triggerVictory();
 });
-document.getElementById("restart-btn").addEventListener("click", ()=>{
+
+const restartBtn = document.getElementById("restart-btn");
+if(restartBtn) restartBtn.addEventListener("click", ()=>{
   showScreen(null);
   startLevel(0);
 });
-document.getElementById("retry-btn").addEventListener("click", ()=>{
+
+const retryBtn = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.addEventListener("click", ()=>{
   showScreen(null);
   startLevel(game.levelIndex);
 });
 
 // Victory screen Main Menu button
 const victoryMenuBtn = document.getElementById('victory-menu-btn');
-if(victoryMenuBtn) victoryMenuBtn.addEventListener('click', ()=>{ showScreen(null); document.getElementById('start-screen').classList.remove('hidden'); location.reload(); });
+if(victoryMenuBtn) victoryMenuBtn.addEventListener('click', ()=>{ location.reload(); });
 
 // mute toggle
 const btnMute = document.getElementById('btn-mute');
@@ -1175,6 +1582,14 @@ function startEndless(){
   // initial small wave
   for(let i=0;i<3;i++) spawnEndlessEnemy(false);
   updateAmmoHUD();
+  playMusic();
+  
+  // Set level label for endless mode
+  elLevelLabel.textContent = `WAVE MODE`;
+  elKillLabel.textContent = `SURVIVE THE WAVES`;
+  elBossWrap.classList.add('hidden');
+  const elWave = document.getElementById('wave-hud');
+  if(elWave) elWave.textContent = `WAVE: 1  MODE: INFINITE`;
 }
 
 const endlessBtn = document.getElementById('endless-btn');
@@ -1186,12 +1601,131 @@ if(retryEndless) retryEndless.addEventListener('click', ()=>{ showScreen(null); 
 
 // mission complete overlay buttons
 const missionExitBtn = document.getElementById('mission-exit-btn');
-if(missionExitBtn) missionExitBtn.addEventListener('click', ()=>{ showScreen(null); document.getElementById('start-screen').classList.remove('hidden'); location.reload(); });
+if(missionExitBtn) missionExitBtn.addEventListener('click', ()=>{ location.reload(); });
 const missionWaveBtn = document.getElementById('mission-wave-btn');
 if(missionWaveBtn) missionWaveBtn.addEventListener('click', ()=>{ showScreen(null); startEndless(); });
+
+/* ============================ GAME MODE STARTERS ============================ */
+
+// Wave Defense mode: Defend the kambam against waves
+function startWaveDefense(){
+  game.gameMode = "defense";
+  game.endless = true;
+  game.state = STATE.WAVE_DEFENSE;
+  hud.classList.remove('hidden');
+  game.enemies = [];
+  game.bullets = [];
+  game.spawnTimer = 400;
+  game.enemiesSpawned = 0;
+  game.player = new Player();
+  game.player.ammo = game.player.maxAmmo;
+  game.player.score = 0;
+  game.world.width = 99999;
+  
+  // Wave Defense specific
+  game.wave = 1;
+  game.waveEnemyCount = 3;
+  game.waveSpawned = 0;
+  game.waveBossSpawned = false;
+  game.kambamHealth = 100;
+  game.kambamMaxHealth = 100;
+  
+  pickups = [];
+  pickups.push({ x: 300, y: GROUND_Y-28, collected: false, type: 'kambam_defense' });
+  
+  for(let i=0;i<3;i++) spawnEndlessEnemy(false);
+  updateAmmoHUD();
+  playMusic();
+  
+  elLevelLabel.textContent = `WAVE DEFENSE`;
+  elKillLabel.textContent = `PROTECT THE KAMBAM`;
+  elBossWrap.classList.add('hidden');
+  const elWave = document.getElementById('wave-hud');
+  if(elWave) elWave.textContent = `WAVE: 1  DEFENSE: ON`;
+}
+
+// Survival mode: Pure infinite fighting
+function startSurvival(){
+  game.gameMode = "survival";
+  game.endless = true;
+  game.state = STATE.SURVIVAL;
+  hud.classList.remove('hidden');
+  game.enemies = [];
+  game.bullets = [];
+  game.spawnTimer = 300;
+  game.enemiesSpawned = 0;
+  game.player = new Player();
+  game.player.ammo = game.player.maxAmmo;
+  game.player.score = 0;
+  game.world.width = 99999;
+  
+  game.wave = 1;
+  game.waveEnemyCount = 4;
+  game.waveSpawned = 0;
+  game.waveBossSpawned = false;
+  
+  for(let i=0;i<4;i++) spawnEndlessEnemy(false);
+  updateAmmoHUD();
+  playMusic();
+  
+  elLevelLabel.textContent = `SURVIVAL MODE`;
+  elKillLabel.textContent = `ENDLESS FIGHTING`;
+  elBossWrap.classList.add('hidden');
+  const elWave = document.getElementById('wave-hud');
+  if(elWave) elWave.textContent = `WAVE: 1  SURVIVAL: ON`;
+}
+
+// Fullscreen toggle
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    if(document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+/* ============================ NEW BUTTON WIRING ============================ */
+
+// Menu buttons for new game modes
+const defenseBtn = document.getElementById('menu-defense-btn');
+if(defenseBtn) defenseBtn.addEventListener('click', ()=>{ showScreen(null); startWaveDefense(); });
+
+const survivalBtn = document.getElementById('menu-survival-btn');
+if(survivalBtn) survivalBtn.addEventListener('click', ()=>{ showScreen(null); startSurvival(); });
+
+// Victory screen buttons for new modes
+const victoryDefenseBtn = document.getElementById('victory-defense-btn');
+if(victoryDefenseBtn) victoryDefenseBtn.addEventListener('click', ()=>{ showScreen(null); startWaveDefense(); });
+
+const victorySurvivalBtn = document.getElementById('victory-survival-btn');
+if(victorySurvivalBtn) victorySurvivalBtn.addEventListener('click', ()=>{ showScreen(null); startSurvival(); });
+
+// Main menu wiring
+const menuStoryBtn = document.getElementById('menu-story-btn');
+if(menuStoryBtn) menuStoryBtn.addEventListener('click', ()=>{ showScreen(null); startLevel(0); });
+
+const menuWaveBtn = document.getElementById('menu-wave-btn');
+if(menuWaveBtn) menuWaveBtn.addEventListener('click', ()=>{ showScreen(null); startEndless(); });
+
+const menuOptionsBtn = document.getElementById('menu-options-btn');
+if(menuOptionsBtn) menuOptionsBtn.addEventListener('click', ()=>{ showScreen('options-overlay'); });
+
+// Fullscreen button
+const fullscreenBtn = document.getElementById('menu-fullscreen-btn');
+if(fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
 
 // main menu buttons
 const menuBtns = document.querySelectorAll('#menu-btn-story, #menu-btn-endless');
 menuBtns.forEach(b=> b.addEventListener('click', ()=>{ location.reload(); }));
+
+// Expose key starter functions to the global scope for inline handlers
+if(typeof window !== 'undefined'){
+  window.startLevel = startLevel;
+  window.startEndless = startEndless;
+  window.startWaveDefense = startWaveDefense;
+  window.startSurvival = startSurvival;
+  window.toggleFullscreen = toggleFullscreen;
+  window.showScreen = showScreen;
+}
 
 })();
